@@ -1,6 +1,6 @@
 ### Unionpay
 
-An python unoffical python SDK
+Unionpay is an unoffical python SDK for unionpay api, using openssl by pyopenssl
 
 ####  Card info for test
 

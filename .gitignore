@@ -1,0 +1,12 @@
+.DS_Store
+*.pyc
+dump.rdb
+logs/*
+sdklog/*
+*.out
+*.nohup
+*.egg-info
+*.log
+*.dat
+dist
+dist/*

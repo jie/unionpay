@@ -1,0 +1,5 @@
+recursive-include *.yaml
+recursive-include *.cer
+recursive-include *.pfx
+recursive-include *.md
+

@@ -67,10 +67,8 @@ class UnionpayClient(object):
     def post(self, addr, data, **kwargs):
         data.update(signature=urlencode({'signature': data['signature']})[10:])
         request_data = Signer.simple_urlencode(data)
-        print addr
-        print request_data
         response = requests.post(
-            addr, data=request_data, timeout=self.timeout, verify=self.verify)
+            addr, data=request_data, timeout=self.timeout, verify=self.verify, headers={'content-type': 'application/x-www-form-urlencoded'})
         if response.status_code != requests.codes.ok:
             msg = "[UPACP]request error: %s, reason: %s" \
                 % (response.status_code, response.reason)
@@ -83,7 +81,7 @@ class UnionpayClient(object):
     def send_packet(self, addr, data, **kwargs):
         raw_content = self.post(addr, data)
         data = self.signer.parse_arguments(raw_content)
-        if data.respCode != '00':
+        if data['respCode'] != '00':
             msg = '[UPACP]respCode: %s orderid: %s' % (
                 data['respCode'], data['orderId'])
             raise error.UnionpayError(msg)

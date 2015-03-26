@@ -37,15 +37,12 @@ class NotifyHandler(tornado.web.RequestHandler):
         return json.dumps({'status': 'ok', 'code': 0})
 
     def post(self):
-        print '*' * 100
-        print self.request.body
         data = self.get_all_arguments()
         self.signer.validate(data)
         response = self.handle_notify(data)
         self.write(response)
 
     def get(self):
-        print self.request.query
         self.finish()
 
 

@@ -13,8 +13,8 @@ digest_method: sha1
 # notify url for back notify from unionpay
 backend_url: https://zhouyang.me/unionpay/notify
 # unionpay trade address
-# app_trans_url: https://101.231.204.80:5000/gateway/api/appTransReq.do
-app_trans_url: http://127.0.0.1:8080/
+app_trans_url: https://101.231.204.80:5000/gateway/api/appTransReq.do
+# app_trans_url: http://127.0.0.1:8080/notify
 front_trans_url: https://101.231.204.80:5000/gateway/api/frontTransReq.do
 back_trans_url: https://101.231.204.80:5000/gateway/api/backTransReq.do
 card_back_trade: https://101.231.204.80:5000/gateway/api/cardTransReq.do

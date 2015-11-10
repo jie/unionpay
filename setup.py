@@ -3,13 +3,12 @@
 # @author: ZhouYang
 
 
-from upacp import __version__
 from setuptools import setup, find_packages
 
 
 setup(
     name="unionpay",
-    version=__version__,
+    version='0.0.1',
     description="unionpay",
     author="zhouyang",
     author_email="zhouyang@zhouyang.me",

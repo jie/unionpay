@@ -10,7 +10,10 @@ and an X509 format cert for validate signature
 
 import logging
 import base64
-import urlparse
+try:
+    import urlparse
+except ImportError:
+    from urllib.parse import urlparse
 from hashlib import sha1
 from OpenSSL import crypto
 from OpenSSL.crypto import FILETYPE_PEM
@@ -119,7 +122,7 @@ class Signer(object):
         Return base64 encoded signature and set signature to data argument
         '''
         cert_id = self.PKCS12.get_certificate().get_serial_number()
-        data['certId']  = str(cert_id)
+        data['certId'] = str(cert_id)
         string_data = self.simple_urlencode(data)
         sign_digest = sha1(string_data).hexdigest()
         private_key = self.PKCS12.get_privatekey()

@@ -11,9 +11,10 @@ and an X509 format cert for validate signature
 import logging
 import base64
 try:
-    import urlparse
+    from urlparse import parse_qs
 except ImportError:
-    from urllib.parse import urlparse
+    from urllib.parse import parse_qs
+
 from hashlib import sha1
 from OpenSSL import crypto
 from OpenSSL.crypto import FILETYPE_PEM
@@ -54,7 +55,7 @@ class Signer(object):
         @filepath: the pfx file path
         @password: the password of pfx file
         '''
-        f = file(filepath, 'rb').read()
+        f = open(filepath, 'rb').read()
         return crypto.load_pkcs12(f, password)
 
     @staticmethod
@@ -63,7 +64,7 @@ class Signer(object):
         @filepath: the cert file path
         @password: the cert type
         '''
-        f = file(filepath, 'rb').read()
+        f = open(filepath, 'rb').read()
         return crypto.load_certificate(filetype, f)
 
     @staticmethod
@@ -74,12 +75,13 @@ class Signer(object):
         '''
         data = Signer.filter_params(params)
         items = sorted(
-            data.iteritems(), key=lambda d: d[0]) if sort else data.items()
+            data.items(), key=lambda d: d[0]) if sort else data.items()
 
         results = []
         for item in items:
-            results.append("%s=%s" % (item[0], str(item[1])))
-        return '&'.join(results)
+            results.append("%s=%s" % (item[0], item[1]))
+        s = '&'.join(results)
+        return s.encode('utf-8')
 
     @staticmethod
     def parse_arguments(raw):
@@ -87,7 +89,7 @@ class Signer(object):
         @raw: raw data to parse argument
         '''
         data = {}
-        qs_params = urlparse.parse_qs(raw)
+        qs_params = parse_qs(str(raw))
         for name in qs_params.keys():
             data[name] = qs_params.get(name)[-1]
         return data
@@ -101,7 +103,7 @@ class Signer(object):
             return dict()
 
         cp_params = params.copy()
-        for key in cp_params.keys():
+        for key in params.keys():
             value = cp_params[key]
             if value is None or len(str(value)) == 0:
                 cp_params.pop(key)

@@ -8,7 +8,10 @@ import requests
 import error
 import logging
 from signer import Signer
-from urllib import urlencode
+try:
+    from urllib import urlencode
+except ImportError:
+    from urllib.parse import urlencode
 from util.helper import make_submit_form
 
 
@@ -80,7 +83,7 @@ class UnionpayClient(object):
 
     def send_packet(self, addr, data, **kwargs):
         raw_content = self.post(addr, data)
-        data = self.signer.parse_arguments(raw_content)
+        data = self.signer.parse_arguments(raw_content.decode('utf-8'))
         if data['respCode'] != '00':
             msg = '[UPACP]respCode: %s orderid: %s' % (
                 data['respCode'], data['orderId'])
@@ -168,7 +171,7 @@ def main():
     config = load_config(sys.argv[1])
     order_id = make_order_id('TEST')
     response = UnionpayClient(config).pay(10, order_id, channel_type='08')
-    print response
+    print(response)
 
 if __name__ == '__main__':
     main()

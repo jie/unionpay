@@ -10,6 +10,7 @@ and an X509 format cert for validate signature
 
 import logging
 import base64
+import os.path
 try:
     from urlparse import parse_qs
 except ImportError:
@@ -18,9 +19,23 @@ except ImportError:
 from hashlib import sha1
 from OpenSSL import crypto
 from OpenSSL.crypto import FILETYPE_PEM
+from datetime import datetime
+from zipfile import ZipFile
+from util.helper import LineObject
 
 
 logger = logging.getLogger(__name__)
+
+
+class TradeFlowType:
+    # 全渠道商户一般交易明细流水文件
+    Normal = 'ZM_'
+    # 全渠道商户差错交易明细流水文件
+    Error = 'ZME_'
+    # 全渠道商户周期交易明细流水文件
+    Periodic = 'PED_'
+    # 全渠道周期商户差错交易明细流水文件
+    PeriodicError = 'PEDERR_'
 
 
 class Signer(object):
@@ -147,3 +162,76 @@ class Signer(object):
         stringData = self.simple_urlencode(data)
         digest = sha1(stringData).hexdigest()
         crypto.verify(self.X509, signature, digest, self.digest_method)
+
+    @staticmethod
+    def accept_filetype(f, merchant_id):
+        '''
+        @f:             filename
+        @merchant_id:   merchant id    
+        '''
+        res = False
+        if (TradeFlowType.Normal in f
+                or TradeFlowType.Error in f
+                or TradeFlowType.Periodic in f
+                or TradeFlowType.PeriodicError in f) and f.endswith(merchant_id):
+            res = True
+        return res
+
+    @staticmethod
+    def save_file_data(settle_date, data, temp_path, merchant_id, temp_prefix='unionpay_'):
+        '''
+        @settle_date:   like 1216 for generate filename
+        @data:          fileContent from request
+        @temp_path:     save data to a temp path
+
+        '''
+        timeRandomString = datetime.now().strftime("%Y%m%d%H%M%S")
+        path = os.path.join(
+            temp_path, "%s%s%s" % (temp_prefix, datetime.now().year, settle_date))
+
+        if not os.path.exists(path):
+            os.mkdir(path)
+
+        fileWholePath = "%s/SMT_%s.zip" % (path, timeRandomString)
+        with open(fileWholePath, 'wb') as f:
+            f.write(data)
+        logger.debug("temp file <%s> created！" % fileWholePath)
+        zfile = ZipFile(fileWholePath, 'r')
+        zfile.extractall(path)
+        files_list = zfile.infolist()
+        logger.debug("file <%s> unziped！" % ','.join(zfile.namelist()))
+        zfile.close()
+        logger.debug("balance file <%s> saved!" % path)
+        os.unlink(fileWholePath)
+        logger.debug("temp file deleted")
+
+        balance_files = []
+
+        for item in files_list:
+            if Signer.accept_filetype(item.filename, merchant_id):
+                balance_files.append(os.path.join(path, item.filename))
+        return balance_files
+
+    @staticmethod
+    def reader_file_data(files_list, settle_date):
+        insert_params = []
+        for item in files_list:
+            Signer.parse_line(settle_date, item, insert_params)
+
+        return insert_params
+
+    @staticmethod
+    def parse_line(settle_date, item, params_list):
+        with open(item, 'rb') as f:
+            for field in f.readlines():
+                line = LineObject(field)
+                params = {
+                    'settle_date': settle_date,
+                    'txnType': line.txnType,
+                    'orderId': line.orderId,
+                    'queryId': line.queryId,
+                    'txnAmt': line.txnAmt,
+                    'merId': line.merId,
+                    'data': field
+                }
+                params_list.append(params)

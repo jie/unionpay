@@ -1,5 +1,5 @@
 # order expire minutes
-expire_minutes: 60
+expire_minutes: 600
 # merchant id
 merchant_id: '777290058110836'
 # cfca file path

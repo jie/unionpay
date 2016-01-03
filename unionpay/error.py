@@ -9,3 +9,7 @@ class UnionpayError(Exception):
 
 class ParseArgsError(Exception):
     pass
+
+
+class SignatureValidateError(Exception):
+    pass

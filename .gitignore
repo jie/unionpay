@@ -10,3 +10,4 @@ sdklog/*
 *.dat
 dist
 dist/*
+build/*

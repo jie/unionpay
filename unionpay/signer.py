@@ -21,10 +21,14 @@ from OpenSSL import crypto
 from OpenSSL.crypto import FILETYPE_PEM
 from datetime import datetime
 from zipfile import ZipFile
-from util.helper import LineObject
+from .util.helper import LineObject
 
 
 logger = logging.getLogger(__name__)
+
+
+class SignatureValidateError(Exception):
+    pass
 
 
 class TradeFlowType:
@@ -151,7 +155,7 @@ class Signer(object):
 
     def validate(self, data):
         '''
-        @data: a dict ready for sign, must contain "signature" key name
+        @data: a dict ready for validate, must contain "signature" key name
         '''
         signature = data.pop('signature')
         signature = signature.replace(' ', '+')
@@ -162,6 +166,16 @@ class Signer(object):
         stringData = self.simple_urlencode(data)
         digest = sha1(stringData).hexdigest()
         crypto.verify(self.X509, signature, digest, self.digest_method)
+
+    def new_validate(self, data):
+        signature = data.pop('signature')
+        signature = signature.replace(' ', '+')
+        signature = base64.b64decode(signature)
+        print('sign: %s' % signature)
+        _sign = self.sign(data)
+        print('_sign: %s' % _sign)
+        if _sign != signature:
+            raise SignatureValidateError()
 
     @staticmethod
     def accept_filetype(f, merchant_id):

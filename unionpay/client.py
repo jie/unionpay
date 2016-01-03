@@ -6,14 +6,14 @@ import zlib
 import base64
 import datetime
 import requests
-import error
+from . import error
 import logging
-from signer import Signer
+from .signer import Signer
 try:
     from urllib import urlencode
 except ImportError:
     from urllib.parse import urlencode
-from util.helper import make_submit_form
+from .util.helper import make_submit_form
 
 logger = logging.getLogger(__name__)
 
@@ -164,6 +164,7 @@ class UnionpayClient(object):
         @biz_type:          idk
         @channel_type:      trade channel: 07-DESKTOP, 08-MOBILE
         @front_url:         browser jump url
+        @order_time:        order submit time
         '''
         order_time = kwargs.get('order_time')
         expire_minutes = kwargs.get('expire_minutes')
@@ -179,7 +180,7 @@ class UnionpayClient(object):
             'accessType': '0',
             'merId': self.config.merchant_id,
             'orderId': orderid,
-            'txnTime': self.get_txn_time(),
+            'txnTime': kwargs.get('order_time', self.get_txn_time()),
             'txnAmt': txnamt,
             'currencyCode': currency_code,
             'payTimeout': self.get_timeout(order_time, expire_minutes),

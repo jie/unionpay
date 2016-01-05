@@ -167,16 +167,6 @@ class Signer(object):
         digest = sha1(stringData).hexdigest()
         crypto.verify(self.X509, signature, digest, self.digest_method)
 
-    def new_validate(self, data):
-        signature = data.pop('signature')
-        signature = signature.replace(' ', '+')
-        signature = base64.b64decode(signature)
-        print('sign: %s' % signature)
-        _sign = self.sign(data)
-        print('_sign: %s' % _sign)
-        if _sign != signature:
-            raise SignatureValidateError()
-
     @staticmethod
     def accept_filetype(f, merchant_id):
         '''
